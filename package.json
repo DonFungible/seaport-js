@@ -31,7 +31,8 @@
     "prettier:check": "prettier --check .",
     "prettier:check:package.json": "prettier-package-json --list-different",
     "prettier:fix": "prettier --write .",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "yp": "npm run build && yalc push"
   },
   "types": "lib/index.d.ts",
   "resolutions": {
@@ -54,7 +55,7 @@
     "minimatch": ">=3.0.5"
   },
   "dependencies": {
-    "@0xsequence/multicall": "^0.39.0",
+    "@0xsequence/multicall": "^0.39.6",
     "ethers": "^5.6.7",
     "merkletreejs": "^0.3.9"
   },

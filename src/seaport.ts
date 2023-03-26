@@ -192,7 +192,7 @@ export class Seaport {
   ): Promise<OrderUseCase<CreateOrderAction>> {
     const signer = this._getSigner(accountAddress);
     const offerer = await signer.getAddress();
-
+    console.log("HI CREATEORDER");
     const { orderComponents, approvalActions } = await this._formatOrder(
       signer,
       offerer,
@@ -511,13 +511,52 @@ export class Seaport {
 
     const domainData = await this._getDomainData();
 
-    const signature = await signer._signTypedData(
-      domainData,
-      EIP_712_ORDER_TYPE,
-      orderComponents
-    );
+    console.log("signer: ", signer);
+    console.log("ORDER COMPONENTS:", orderComponents);
+    let signature;
+    try {
+      signature = await signer._signTypedData(
+        domainData,
+        EIP_712_ORDER_TYPE,
+        orderComponents
+      );
+    } catch (error) {
+      const types = {
+        EIP712Domain: [
+          { name: "name", type: "string" },
+          { name: "version", type: "string" },
+          { name: "chainId", type: "uint256" },
+          { name: "verifyingContract", type: "address" },
+        ],
+        OrderComponents: [
+          { name: "orderParameters", type: "string" },
+          { name: "type", type: "string" },
+        ],
+      };
+      const typedData = {
+        types,
+        domain: domainData,
+        primaryType: "OrderComponents" as const,
+        message: orderComponents,
+      };
+      const message = _TypedDataEncoder.getPayload(
+        domainData,
+        EIP_712_ORDER_TYPE,
+        orderComponents
+      );
+      console.log("MESSAGE: ", message);
+      console.log("Typed data: ", typedData);
 
-    // Use EIP-2098 compact signatures to save gas.
+      const typesDot = typedData.types;
+      const args = typesDot["OrderComponents"];
+      console.log("TYPES:", types, "ARGS:", args);
+
+      //@ts-ignore
+      //   signature = await signer.signTypedData(typedData);
+      signature = await signer.signTypedData(message);
+    }
+    console.log("Signature: ", signature);
+    // // Use EIP-2098 compact signatures to save gas.
     return ethers.utils.splitSignature(signature).compact;
   }
 
